@@ -1,0 +1,469 @@
+// ==========================================
+// Prisma Schema
+// Sistem Informasi Akademik SMP
+// ==========================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+  PRINCIPAL
+  PARENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+enum AttendanceStatus {
+  HADIR
+  SAKIT
+  IZIN
+  ALFA
+}
+
+enum SemesterType {
+  GANJIL
+  GENAP
+}
+
+// ─── Models ────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  isActive     Boolean  @default(true)
+
+  // Relasi ke profile
+  student Student?
+  teacher Teacher?
+  parent  Parent?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Student {
+  id       String  @id @default(cuid())
+  nis      String  @unique
+  name     String
+  gender   Gender
+  birthDate DateTime?
+  address  String?
+
+  // Relasi ke User account
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Relasi ke Kelas
+  classId String
+  class   Class  @relation(fields: [classId], references: [id])
+
+  // Relasi ke Orang Tua
+  parents ParentStudent[]
+
+  // Relasi ke data akademik
+  attendances Attendance[]
+  grades      Grade[]
+  reportCards ReportCard[]
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([classId])
+}
+
+model Parent {
+  id      String  @id @default(cuid())
+  name    String
+  phone   String?
+  address String?
+
+  // Relasi ke User account
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Relasi ke Siswa
+  students ParentStudent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ParentStudent {
+  id String @id @default(cuid())
+
+  parentId  String
+  parent    Parent  @relation(fields: [parentId], references: [id], onDelete: Cascade)
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([parentId, studentId])
+  @@index([studentId])
+}
+
+model Teacher {
+  id      String  @id @default(cuid())
+  nip     String? @unique
+  name    String
+  phone   String?
+  address String?
+
+  // Relasi ke User account
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Relasi ke kelas sebagai wali kelas
+  homeroomClasses Class[] @relation("HomeroomTeacher")
+
+  // Relasi ke mata pelajaran
+  subjects TeacherSubject[]
+
+  // Relasi ke jadwal
+  schedules Schedule[]
+
+  // Absensi yang dibuat oleh guru ini
+  attendancesCreated Attendance[] @relation("AttendanceCreatedBy")
+
+  // Relasi ke nilai
+  grades Grade[]
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Class {
+  id        String @id @default(cuid())
+  name      String
+  gradeLevel Int
+
+  // Relasi ke Tahun Ajaran
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  // Relasi ke Wali Kelas
+  homeroomTeacherId String?
+  homeroomTeacher   Teacher? @relation("HomeroomTeacher", fields: [homeroomTeacherId], references: [id], onDelete: SetNull)
+
+  // Relasi ke Siswa
+  students Student[]
+
+  // Relasi ke Jadwal
+  schedules Schedule[]
+
+  // Relasi ke Absensi
+  attendances Attendance[]
+
+  // Relasi ke Nilai
+  grades Grade[]
+
+  // Relasi ke Rapor
+  reportCards ReportCard[]
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, academicYearId])
+  @@index([academicYearId])
+  @@index([homeroomTeacherId])
+}
+
+model Subject {
+  id         String  @id @default(cuid())
+  code       String  @unique
+  name       String
+  gradeLevel Int?
+
+  // Relasi ke Guru
+  teachers TeacherSubject[]
+
+  // Relasi ke Jadwal
+  schedules Schedule[]
+
+  // Relasi ke Nilai
+  grades Grade[]
+
+  // Relasi ke Bobot Nilai
+  gradeWeights GradeWeight[]
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TeacherSubject {
+  id String @id @default(cuid())
+
+  teacherId String
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([teacherId, subjectId])
+  @@index([subjectId])
+}
+
+model AcademicYear {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  startDate DateTime?
+  endDate   DateTime?
+  isActive  Boolean  @default(false)
+
+  // Relasi ke Kelas
+  classes Class[]
+
+  // Relasi ke Semester
+  semesters Semester[]
+
+  // Relasi ke Jadwal
+  schedules Schedule[]
+
+  // Relasi ke Absensi
+  attendances Attendance[]
+
+  // Relasi ke Nilai
+  grades Grade[]
+
+  // Relasi ke Rapor
+  reportCards ReportCard[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Semester {
+  id       String       @id @default(cuid())
+  type     SemesterType
+  isActive Boolean      @default(false)
+
+  // Relasi ke Tahun Ajaran
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+
+  // Relasi ke Jadwal
+  schedules Schedule[]
+
+  // Relasi ke Absensi
+  attendances Attendance[]
+
+  // Relasi ke Bobot Nilai
+  gradeWeights GradeWeight[]
+
+  // Relasi ke Nilai
+  grades Grade[]
+
+  // Relasi ke Rapor
+  reportCards ReportCard[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([type, academicYearId])
+  @@index([academicYearId])
+}
+
+model Schedule {
+  id String @id @default(cuid())
+
+  // Relasi ke Kelas
+  classId String
+  class   Class   @relation(fields: [classId], references: [id])
+
+  // Relasi ke Guru
+  teacherId String
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
+
+  // Relasi ke Mata Pelajaran
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  // Relasi ke Semester
+  semesterId String
+  semester   Semester @relation(fields: [semesterId], references: [id])
+
+  // Relasi ke Tahun Ajaran
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  dayOfWeek DayOfWeek
+  startTime String  // Format: "HH:mm"
+  endTime   String  // Format: "HH:mm"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([classId])
+  @@index([teacherId])
+  @@index([subjectId])
+  @@index([semesterId])
+  @@index([academicYearId])
+  @@index([dayOfWeek])
+}
+
+model Attendance {
+  id String @id @default(cuid())
+
+  // Relasi ke Siswa
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  // Relasi ke Kelas
+  classId String
+  class   Class   @relation(fields: [classId], references: [id])
+
+  // Relasi ke Semester
+  semesterId String
+  semester   Semester @relation(fields: [semesterId], references: [id])
+
+  // Relasi ke Tahun Ajaran
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  date   DateTime
+  status AttendanceStatus
+
+  // Guru yang membuat absensi ini
+  createdById String?
+  createdBy   Teacher? @relation("AttendanceCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  note String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, classId, date])
+  @@index([classId])
+  @@index([semesterId])
+  @@index([academicYearId])
+  @@index([date])
+}
+
+model GradeWeight {
+  id String @id @default(cuid())
+
+  // Relasi ke Mata Pelajaran
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  // Relasi ke Semester
+  semesterId String
+  semester   Semester @relation(fields: [semesterId], references: [id])
+
+  assignmentWeight Int @default(30)
+  midtermWeight    Int @default(30)
+  finalExamWeight  Int @default(40)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([subjectId, semesterId])
+  @@index([semesterId])
+}
+
+model Grade {
+  id String @id @default(cuid())
+
+  // Relasi ke Siswa
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  // Relasi ke Kelas
+  classId String
+  class   Class   @relation(fields: [classId], references: [id])
+
+  // Relasi ke Mata Pelajaran
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  // Relasi ke Guru
+  teacherId String
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
+
+  // Relasi ke Semester
+  semesterId String
+  semester   Semester @relation(fields: [semesterId], references: [id])
+
+  // Relasi ke Tahun Ajaran
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  assignmentScore Float
+  midtermScore    Float
+  finalExamScore  Float
+  finalScore      Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, classId, subjectId, semesterId, academicYearId])
+  @@index([classId])
+  @@index([subjectId])
+  @@index([teacherId])
+  @@index([semesterId])
+  @@index([academicYearId])
+}
+
+model ReportCard {
+  id String @id @default(cuid())
+
+  // Relasi ke Siswa
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  // Relasi ke Kelas
+  classId String
+  class   Class   @relation(fields: [classId], references: [id])
+
+  // Relasi ke Semester
+  semesterId String
+  semester   Semester @relation(fields: [semesterId], references: [id])
+
+  // Relasi ke Tahun Ajaran
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  generatedAt DateTime @default(now())
+  note        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, classId, semesterId, academicYearId])
+  @@index([classId])
+  @@index([semesterId])
+  @@index([academicYearId])
+}

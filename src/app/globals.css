@@ -1,0 +1,205 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-800 antialiased;
+  }
+
+  * {
+    @apply border-slate-200;
+  }
+}
+
+@layer components {
+  /* Primary Button - Amber */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2
+      bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded
+      transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Secondary Button - Orange */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2
+      bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded
+      transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Outline Button */
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2
+      border border-slate-300 hover:border-slate-400 text-slate-700
+      font-semibold rounded transition-colors duration-200
+      disabled:opacity-50 disabled:cursor-not-allowed bg-white;
+  }
+
+  /* Danger Button */
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2
+      bg-red-500 hover:bg-red-600 text-white font-semibold rounded
+      transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Card */
+  .card {
+    @apply bg-white border border-slate-200 rounded-lg shadow-sm;
+  }
+
+  /* Input */
+  .input {
+    @apply w-full px-3 py-2 border border-slate-300 rounded
+      focus:outline-none focus:ring-2 focus:ring-amber-400
+      focus:border-amber-400 text-slate-800 placeholder-slate-400
+      transition-colors duration-200;
+  }
+
+  .input-error {
+    @apply border-red-400 focus:ring-red-300 focus:border-red-400;
+  }
+
+  /* Select */
+  .select {
+    @apply w-full px-3 py-2 border border-slate-300 rounded bg-white
+      focus:outline-none focus:ring-2 focus:ring-amber-400
+      focus:border-amber-400 text-slate-800
+      transition-colors duration-200 cursor-pointer;
+  }
+
+  /* Badge Hadir - Lime/Hijau Muda */
+  .badge-hadir {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+      bg-lime-100 text-lime-700 border border-lime-200;
+  }
+
+  /* Badge Sakit - Orange Muda */
+  .badge-sakit {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+      bg-orange-100 text-orange-700 border border-orange-200;
+  }
+
+  /* Badge Izin - Amber Muda */
+  .badge-izin {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+      bg-amber-100 text-amber-700 border border-amber-200;
+  }
+
+  /* Badge Alfa - Red Muda */
+  .badge-alfa {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+      bg-red-100 text-red-700 border border-red-200;
+  }
+
+  /* Badge Active */
+  .badge-active {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+      bg-lime-100 text-lime-700 border border-lime-200;
+  }
+
+  /* Badge Inactive */
+  .badge-inactive {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+      bg-slate-100 text-slate-600 border border-slate-200;
+  }
+
+  /* Stat Card */
+  .stat-card {
+    @apply card p-5 flex items-center gap-4;
+  }
+
+  .stat-card-icon {
+    @apply w-12 h-12 rounded-lg flex items-center justify-center;
+  }
+
+  .stat-card-value {
+    @apply text-2xl font-bold text-slate-800;
+  }
+
+  .stat-card-label {
+    @apply text-sm text-slate-500 mt-0.5;
+  }
+
+  /* Table */
+  .table-container {
+    @apply overflow-x-auto rounded-lg border border-slate-200;
+  }
+
+  .table {
+    @apply w-full text-sm text-left;
+  }
+
+  .table thead {
+    @apply bg-slate-50 border-b border-slate-200;
+  }
+
+  .table th {
+    @apply px-4 py-3 font-semibold text-slate-700;
+  }
+
+  .table td {
+    @apply px-4 py-3 text-slate-700 border-b border-slate-100;
+  }
+
+  .table tbody tr:hover {
+    @apply bg-amber-50/30;
+  }
+
+  .table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  /* Page Header */
+  .page-header {
+    @apply mb-6;
+  }
+
+  .page-title {
+    @apply text-2xl font-bold text-slate-800;
+  }
+
+  .page-description {
+    @apply text-sm text-slate-500 mt-1;
+  }
+
+  /* Sidebar */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600
+      hover:bg-amber-50 hover:text-amber-700 transition-colors duration-200;
+  }
+
+  .sidebar-link-active {
+    @apply bg-amber-100 text-amber-700 border-l-4 border-amber-500;
+  }
+
+  /* Alert */
+  .alert {
+    @apply px-4 py-3 rounded-lg border text-sm;
+  }
+
+  .alert-error {
+    @apply bg-red-50 border-red-200 text-red-700;
+  }
+
+  .alert-success {
+    @apply bg-lime-50 border-lime-200 text-lime-700;
+  }
+
+  .alert-warning {
+    @apply bg-orange-50 border-orange-200 text-orange-700;
+  }
+
+  .alert-info {
+    @apply bg-amber-50 border-amber-200 text-amber-700;
+  }
+}
