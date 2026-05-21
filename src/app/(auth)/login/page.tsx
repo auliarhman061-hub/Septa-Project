@@ -19,6 +19,8 @@ import { useSearchParams } from "next/navigation";
 
 function LoginForm() {
   const searchParams = useSearchParams();
+  // Default redirect ke / kalau tidak ada callbackUrl —
+  // middleware akan redirect user logged-in ke dashboard sesuai role.
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   const [email, setEmail] = useState("");
