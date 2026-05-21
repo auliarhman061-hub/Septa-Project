@@ -7,7 +7,7 @@
 // User dengan role yang salah akan diarahkan ke dashboard sesuai role-nya.
 // ══════════════════════════════════════════════
 
-import { auth } from "@/lib/auth";
+import { auth } from "@/auth.config";
 import { NextResponse } from "next/server";
 import { Role } from "@prisma/client";
 
